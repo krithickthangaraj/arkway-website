@@ -52,8 +52,7 @@ function Navbar() {
     { name: 'Home', href: '#' },
     { name: 'About', href: '#about' },
     { name: 'Testimonials', href: '#testimonials' },
-    { name: 'Courses', href: '#courses' },
-    { name: 'Study Abroad', href: '#study-abroad' },
+    { name: 'Courses', href: '/courses' },
     { name: 'Contact', href: '#contact' },
   ];
   const linkRefs = useRef([]);
@@ -121,11 +120,15 @@ function Navbar() {
   function handleNavClick(name, href) {
     setActive(name);
     setMenuOpen(false);
+    if (href.startsWith('/')) {
+      window.location.href = href;
+      return;
+    }
     // Scroll to section smoothly
     const id = href.replace('#', '') || 'home';
     const section = id === 'home' ? document.body : document.getElementById(id);
     if (section) {
-      const y = id === 'home' ? 0 : section.getBoundingClientRect().top + window.scrollY - 80; // 80px offset for navbar
+      const y = id === 'home' ? 0 : section.getBoundingClientRect().top + window.scrollY - 80;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
   }
@@ -134,9 +137,10 @@ function Navbar() {
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100 shadow-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between h-20 relative">
         {/* Left: Company Name */}
-        <a href="#" className="flex items-center gap-2 select-none">
+        <a href="#" className="flex items-center gap-3 select-none">
+          <img src="/logo.jpg" alt="Arkway Logo" className="h-10 w-10 rounded-lg shadow-sm object-contain bg-white" />
           <span className="text-2xl font-extrabold text-blue-700 tracking-tight">Arkway</span>
-          <span className="text-2xl font-extrabold  text-blue-500 tracking-wide ">Educational Services</span>
+          <span className="text-2xl font-extrabold text-blue-500 tracking-wide">Educational Services</span>
         </a>
         {/* Desktop Nav */}
         <div className="hidden md:flex gap-7 items-center relative w-fit">
@@ -328,18 +332,12 @@ function CoursesSection() {
           <p className="text-white text-center">Get step-by-step help applying to top universities worldwide.</p>
         </div>
       </div>
-    </section>
-  );
-}
-
-function StudyAbroadSection() {
-  return (
-    <section id="study-abroad" className="py-20 bg-gray-50">
-      <div className="max-w-3xl mx-auto text-center">
-        <h2 className="text-4xl font-bold mb-6 text-blue-900">Study Abroad</h2>
-        <p className="mb-6 text-lg text-gray-700">Explore opportunities to study in the UK, US, Canada, Australia, and more. Our advisors will guide you every step of the way.</p>
-        <a href="#contact" className="inline-block px-8 py-3 bg-orange-500 text-white rounded-full font-semibold text-lg shadow-lg hover:bg-orange-400 transition">Speak to an Advisor</a>
-      </div>
+      <div className="flex justify-center mt-10">
+        <a href="/courses" className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-full font-bold text-lg shadow-lg hover:from-blue-700 hover:to-blue-500 transition gap-2 group">
+          Explore Courses
+          <ArrowRightIcon className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
+        </a>
+    </div>
     </section>
   );
 }
@@ -366,7 +364,6 @@ export default function HomePage() {
       <AboutSection />
       <TestimonialsSection />
       <CoursesSection />
-      <StudyAbroadSection />
       <ContactSection />
     </main>
   );

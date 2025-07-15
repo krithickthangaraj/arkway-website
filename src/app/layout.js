@@ -15,6 +15,10 @@ export const metadata = {
   title: "Arkway EdServ – Smart Education Solutions",
   description: "Official website of Arkway EdServ, providing smarter, scalable education services.",
   keywords: "Arkway, EdServ, education, India, smart learning",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "Arkway EdServ",
     description: "Smarter, scalable education solutions",
