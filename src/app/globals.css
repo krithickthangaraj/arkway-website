@@ -12,6 +12,25 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Fade-in-up animation for hero section */
+@keyframes fadeinup {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-fadeinup {
+  animation: fadeinup 1s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  width: 1ch;
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
 /* Removed prefers-color-scheme: dark and body background/color rules to let Tailwind handle theming */
 
 body {

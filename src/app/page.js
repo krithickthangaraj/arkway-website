@@ -1,9 +1,53 @@
 "use client";
 import { ArrowRightIcon, AcademicCapIcon, GlobeAltIcon, ChatBubbleLeftRightIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
+function useCountUp(target, duration = 1200) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const end = parseInt(target);
+    if (start === end) return;
+    let increment = end / (duration / 16);
+    let current = start;
+    let raf;
+    function update() {
+      current += increment;
+      if (current < end) {
+        setCount(Math.floor(current));
+        raf = requestAnimationFrame(update);
+      } else {
+        setCount(end);
+      }
+    }
+    raf = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return count;
+}
+
+function useTypewriter(text, speed = 60) {
+  const [displayed, setDisplayed] = useState('');
+  useEffect(() => {
+    let i = 0;
+    let timeout;
+    function type() {
+      setDisplayed(text.slice(0, i + 1));
+      if (i < text.length - 1) {
+        i++;
+        timeout = setTimeout(type, speed);
+      }
+    }
+    type();
+    return () => clearTimeout(timeout);
+  }, [text, speed]);
+  return displayed;
+}
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [active, setActive] = useState('Home');
+  const [barStyle, setBarStyle] = useState({ left: 0, width: 0 });
   const navLinks = [
     { name: 'Home', href: '#' },
     { name: 'About', href: '#about' },
@@ -12,25 +56,114 @@ function Navbar() {
     { name: 'Study Abroad', href: '#study-abroad' },
     { name: 'Contact', href: '#contact' },
   ];
+  const linkRefs = useRef([]);
+  const sectionRefs = useRef({});
+  
+  // Attach refs to sections for scroll detection
+  useEffect(() => {
+    navLinks.forEach(link => {
+      const id = link.href.replace('#', '') || 'home';
+      sectionRefs.current[link.name] = id === 'home' ? document.body : document.getElementById(id);
+    });
+  }, []);
+
+  // Scroll detection: update active nav on section in view
+  useEffect(() => {
+    const handleScroll = () => {
+      let found = 'Home';
+      for (let i = navLinks.length - 1; i >= 0; i--) {
+        const link = navLinks[i];
+        const id = link.href.replace('#', '') || 'home';
+        const section = id === 'home' ? document.body : document.getElementById(id);
+        if (section) {
+          const rect = section.getBoundingClientRect();
+          if (rect.top <= 120) { // 120px offset for navbar height
+            found = link.name;
+            break;
+          }
+        }
+      }
+      setActive(found);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    // Animate underline bar to active link
+    const idx = navLinks.findIndex(link => link.name === active);
+    if (linkRefs.current[idx]) {
+      const el = linkRefs.current[idx];
+      setBarStyle({
+        left: el.offsetLeft,
+        width: el.offsetWidth,
+      });
+    }
+  }, [active, menuOpen]);
+
+  useEffect(() => {
+    // Recalculate on window resize
+    function onResize() {
+      const idx = navLinks.findIndex(link => link.name === active);
+      if (linkRefs.current[idx]) {
+        const el = linkRefs.current[idx];
+        setBarStyle({
+          left: el.offsetLeft,
+          width: el.offsetWidth,
+        });
+      }
+    }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [active, menuOpen]);
+
+  function handleNavClick(name, href) {
+    setActive(name);
+    setMenuOpen(false);
+    // Scroll to section smoothly
+    const id = href.replace('#', '') || 'home';
+    const section = id === 'home' ? document.body : document.getElementById(id);
+    if (section) {
+      const y = id === 'home' ? 0 : section.getBoundingClientRect().top + window.scrollY - 80; // 80px offset for navbar
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }
+
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100 shadow-card">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between h-20 relative">
         {/* Left: Company Name */}
-        <a href="#" className="text-2xl font-extrabold text-blue-700 tracking-tight whitespace-nowrap">
-          Arkway <span className="text-blue-400">Educational Services</span>
+        <a href="#" className="flex items-center gap-2 select-none">
+          <span className="text-2xl font-extrabold text-blue-700 tracking-tight">Arkway</span>
+          <span className="text-2xl font-extrabold  text-blue-500 tracking-wide ">Educational Services</span>
         </a>
         {/* Desktop Nav */}
-        <div className="hidden md:flex gap-8 items-center">
-          {navLinks.map(link => (
+        <div className="hidden md:flex gap-7 items-center relative w-fit">
+          {navLinks.map((link, i) => (
             <a
               key={link.name}
               href={link.href}
-              className="text-lg font-medium text-gray-700 hover:text-blue-600 transition px-2 py-1 rounded-lg hover:bg-blue-50 relative after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-0.5 after:bg-blue-600 after:transition-all after:duration-300 hover:after:w-full hover:after:h-0.5"
+              ref={el => (linkRefs.current[i] = el)}
+              className={`text-lg font-medium px-2 py-1 rounded-lg relative transition-all duration-300
+                ${active === link.name ? 'text-blue-700 font-bold' : 'text-gray-700'}
+                hover:text-blue-600
+              `}
               style={{ overflow: 'hidden' }}
+              onClick={e => { e.preventDefault(); handleNavClick(link.name, link.href); }}
             >
               {link.name}
             </a>
           ))}
+          {/* Animated underline bar */}
+          <span
+            className="absolute bottom-0 h-1.5 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-300"
+            style={{
+              left: barStyle.left,
+              width: barStyle.width,
+              opacity: barStyle.width ? 1 : 0,
+            }}
+          />
         </div>
         {/* Mobile Nav Toggle */}
         <button
@@ -53,8 +186,10 @@ function Navbar() {
               <a
                 key={link.name}
                 href={link.href}
-                className="block text-lg font-medium text-gray-700 hover:text-blue-600 transition px-2 py-2 rounded-lg hover:bg-blue-50"
-                onClick={() => setMenuOpen(false)}
+                className={`block text-lg font-medium px-2 py-2 rounded-lg transition-all duration-300
+                  ${active === link.name ? 'text-blue-700 font-bold' : 'text-gray-700'}
+                  hover:text-blue-600 hover:bg-blue-50`}
+                onClick={e => { e.preventDefault(); handleNavClick(link.name, link.href); setMenuOpen(false); }}
               >
                 {link.name}
               </a>
@@ -67,19 +202,25 @@ function Navbar() {
 }
 
 function HeroSection() {
+  const partners = useCountUp(180);
+  const students = useCountUp(1000);
+  const years = useCountUp(15);
+  const typeText = useTypewriter('Global Education', 80);
   return (
-    <section className="relative py-28 bg-gradient-to-br from-gray-50 via-white to-gray-100 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-16 md:gap-24">
+    <section className="relative py-12 bg-gradient-to-br from-gray-50 via-white to-gray-100 overflow-hidden min-h-[calc(100vh-5rem)] flex items-center">
+      <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-16 md:gap-24 animate-fadeinup w-full">
         {/* Left: Text Content */}
-        <div className="flex-1 text-left md:pr-12 flex flex-col justify-center">
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-4 text-gray-900 leading-tight">
+        <div className="flex-1 text-left md:pr-12 flex flex-col justify-center space-y-10">
+          <h1 className="text-4xl md:text-6xl font-extrabold mb-0 text-gray-900 leading-tight">
             Your Gateway to <br className="hidden md:block" />
-            <span className="text-blue-600">Global Education</span>
+            <span className="text-blue-600 relative font-black inline-flex items-center whitespace-nowrap">
+              {typeText}<span className="typewriter-cursor">|</span>
+            </span>
           </h1>
-          <p className="text-xl md:text-2xl mb-10 text-gray-600 font-medium max-w-xl">
+          <p className="text-lg md:text-xl text-gray-600 font-medium max-w-xl mt-8">
             Unlock your potential with Arkway’s comprehensive educational services. We connect ambitious students to world-class universities, offer expert-led professional courses, and guide you every step of the way to global success.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 mb-12">
+          <div className="flex flex-col sm:flex-row gap-4">
             <a href="#study-abroad" className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-full font-bold text-lg shadow-lg hover:from-blue-700 hover:to-blue-500 transition gap-2 group">
               Study Abroad
               <ArrowRightIcon className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
@@ -88,18 +229,18 @@ function HeroSection() {
               Browse Courses
             </a>
           </div>
-          <div className="flex gap-10 mt-2">
+          <div className="flex gap-10 mt-4">
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-extrabold text-blue-600 mb-1">180+</div>
-              <div className="text-gray-500 text-sm font-medium tracking-wide uppercase">University Partners</div>
+              <div className="text-2xl md:text-3xl font-extrabold text-blue-600 mb-1">{partners}+</div>
+              <div className="text-gray-500 text-xs md:text-sm font-medium tracking-wide uppercase">University Partners</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-extrabold text-blue-600 mb-1">1000+</div>
-              <div className="text-gray-500 text-sm font-medium tracking-wide uppercase">Students Placed</div>
+              <div className="text-2xl md:text-3xl font-extrabold text-blue-600 mb-1">{students}+</div>
+              <div className="text-gray-500 text-xs md:text-sm font-medium tracking-wide uppercase">Students Placed</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-extrabold text-blue-600 mb-1">15+</div>
-              <div className="text-gray-500 text-sm font-medium tracking-wide uppercase">Years Experience</div>
+              <div className="text-2xl md:text-3xl font-extrabold text-blue-600 mb-1">{years}+</div>
+              <div className="text-gray-500 text-xs md:text-sm font-medium tracking-wide uppercase">Years Experience</div>
             </div>
           </div>
         </div>
