@@ -1,6 +1,7 @@
 "use client";
 import { ArrowRightIcon, AcademicCapIcon, GlobeAltIcon, ChatBubbleLeftRightIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect, useRef } from 'react';
+import Image from "next/image";
 
 function useCountUp(target, duration = 1200) {
   const [count, setCount] = useState(0);
@@ -138,7 +139,7 @@ function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between h-20 relative">
         {/* Left: Company Name */}
         <a href="#" className="flex items-center gap-3 select-none">
-          <img src="/logo.jpg" alt="Arkway Logo" className="h-10 w-10 rounded-lg shadow-sm object-contain bg-white" />
+          <Image src="/logo.jpg" alt="Arkway Logo" width={40} height={40} className="h-10 w-10 rounded-lg shadow-sm object-contain bg-white" />
           <span className="text-2xl font-extrabold text-blue-700 tracking-tight">Arkway</span>
           <span className="text-2xl font-extrabold text-blue-500 tracking-wide">Educational Services</span>
         </a>
@@ -251,9 +252,11 @@ function HeroSection() {
         {/* Right: Image or Illustration */}
         <div className="flex-1 flex justify-center items-center w-full md:w-auto">
           <div className="relative w-[340px] h-[340px] sm:w-[400px] sm:h-[400px] md:w-[520px] md:h-[520px] rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-tr from-gray-100 via-blue-50 to-white flex items-center justify-center">
-            <img
+            <Image
               src="/hero-student.jpg"
               alt="Student studying"
+              width={520}
+              height={520}
               className="object-cover w-full h-full rounded-3xl"
               style={{ filter: 'brightness(0.98) contrast(1.05)' }}
             />

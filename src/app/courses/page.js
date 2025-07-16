@@ -1,6 +1,8 @@
 "use client";
 import { useState } from 'react';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import Link from "next/link";
+import Image from "next/image";
 
 const courseDomains = [
   {
@@ -49,10 +51,10 @@ export default function CoursesPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 font-sans text-gray-900">
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <a href="/" className="inline-flex items-center gap-2 text-blue-700 font-semibold text-lg hover:underline mb-8">
+        <Link href="/" className="inline-flex items-center gap-2 text-blue-700 font-semibold text-lg hover:underline mb-8">
           <ArrowLeftIcon className="w-5 h-5" />
           Back to Home
-        </a>
+        </Link>
         <h1 className="text-5xl font-extrabold text-center mb-8 tracking-tight text-blue-700 drop-shadow-sm">Our Courses</h1>
         {/* Domain Navbar */}
         <nav className="flex justify-center gap-4 md:gap-8 mb-12 border-b border-gray-200 pb-2">
@@ -76,7 +78,7 @@ export default function CoursesPage() {
               className="group bg-white/70 backdrop-blur-lg border border-blue-100 p-8 rounded-3xl shadow-2xl flex flex-col items-start transition-transform duration-300 hover:scale-[1.03] hover:shadow-3xl relative overflow-hidden hover:bg-gradient-to-br hover:from-blue-50 hover:to-blue-100"
               style={{ minHeight: '260px' }}
             >
-              <img src={course.img} alt={course.title} className="w-full h-40 object-cover rounded-2xl mb-4 shadow-md transition-transform duration-300 group-hover:scale-105" />
+              <Image src={course.img} alt={course.title} width={400} height={160} className="w-full h-40 object-cover rounded-2xl mb-4 shadow-md transition-transform duration-300 group-hover:scale-105" />
               <h2 className="text-2xl font-bold mb-2 text-blue-700 group-hover:tracking-wider transition-all duration-300 drop-shadow-sm">{course.title}</h2>
               <p className="text-base text-gray-700 font-medium mb-4 max-w-md">{course.desc}</p>
               <div className="flex flex-wrap gap-4 mb-2">
